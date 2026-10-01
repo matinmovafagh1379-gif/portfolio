@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /og-image.jpg
+
+Sitemap: https://matinmovafagh.ir/sitemap.xml

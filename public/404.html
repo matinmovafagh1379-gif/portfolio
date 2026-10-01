@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>404 | Matin Movafagh</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#150e0c">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Vazirmatn:wght@400..700&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root { --night: #150e0c; --cream: #f7ebd9; --muted: #b9a891; --amber: #ffab5c; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(60rem 36rem at 50% 38%, rgba(255, 171, 92, .12), transparent 70%), var(--night);
+    color: var(--cream);
+    font-family: "Vazirmatn", "Bricolage Grotesque", system-ui, sans-serif;
+    text-align: center;
+  }
+  main { display: grid; gap: 14px; justify-items: center; max-width: 30rem; }
+  .code {
+    font-family: "Bricolage Grotesque", "Vazirmatn", system-ui, sans-serif;
+    font-weight: 800; font-size: clamp(6rem, 26vw, 11rem); line-height: 1; letter-spacing: -.04em; color: var(--amber);
+  }
+  h1 { font-size: clamp(1.4rem, 4vw, 1.9rem); font-weight: 600; }
+  p { color: var(--muted); line-height: 1.7; }
+  a { text-decoration: none; }
+  a:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+  .btn {
+    margin-top: 10px; padding: .8rem 1.6rem; border-radius: 999px;
+    color: #1a1310; background: var(--amber); font-weight: 700;
+    transition: transform .2s, background .2s;
+  }
+  .btn:hover { background: #ffbd7d; transform: translateY(-1px); }
+  .alt { color: var(--muted); font-size: .95rem; padding: .4rem .8rem; }
+  .alt:hover { color: var(--cream); }
+  @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="code" dir="ltr">404</div>
+  <h1>این صفحه پیدا نشد.</h1>
+  <p dir="ltr" lang="en">This page doesn’t exist.</p>
+  <a class="btn" href="/">بازگشت به صفحه‌ی اصلی</a>
+  <a class="alt" href="/en/" hreflang="en" lang="en" dir="ltr">Back to home</a>
+</main>
+</body>
+</html>
