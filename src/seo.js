@@ -10,7 +10,7 @@ export const AUTHOR_FA = 'متین موفق';
 // Public project links. Used by the page, the 3D scene and the structured data.
 export const PROJECT_URLS = {
   otaghbazi: 'https://otaghbazi.vercel.app/',
-  tradingCrm: 'https://crm.matinmovafagh.ir/',
+  tradingCrm: 'https://trading-crm-fam.vercel.app/',
 };
 
 export const SOCIAL = [

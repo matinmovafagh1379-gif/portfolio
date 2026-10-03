@@ -219,6 +219,11 @@
       background: linear-gradient(to top, rgba(21, 14, 12, .94) 0%, rgba(21, 14, 12, .8) 45%, transparent 85%);
     }
     .row { grid-template-columns: 1fr auto; }
+    /* The dark backing that keeps the contact text readable covers the whole lower screen
+       on phones. Once the 3D phone takes over and the text fades out, remove it so the
+       phone's own screen and links stay clear. */
+    .contact .pin::before { transition: opacity .4s ease; }
+    .contact .pin.phone-focus::before { opacity: 0; }
     .contact .pin > * { max-width: none; }
     .row h3 { grid-column: 1 / -1; }
     .row .desc { grid-column: 1 / -1; grid-row: 2; }

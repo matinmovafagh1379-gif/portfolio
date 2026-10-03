@@ -71,8 +71,10 @@ function start3D() {
   }
   $('#gl').addEventListener('webglcontextlost', (e) => { e.preventDefault(); root.classList.add('no-webgl'); }, false);
 
-  const MIN_RATIO = coarse ? 0.8 : 1;
-  renderer.setPixelRatio(Math.min(dpr, coarse ? 1.25 : 1.75));
+  // Same base sharpness as before. The floor is what the adaptive step below may drop to,
+  // and it stays high so a slow device never ends up looking blurry.
+  const MIN_RATIO = coarse ? 1.25 : 1.5;
+  renderer.setPixelRatio(Math.min(dpr, coarse ? 1.5 : 2));
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
@@ -876,13 +878,13 @@ function start3D() {
       renderer.render(scene, camera);
       lastRender = now; needsRender = false;
 
-      // Adaptive resolution: if sustained animation runs under ~38 fps, render fewer pixels.
+      // Adaptive resolution: only if sustained animation drops under ~25 fps, shave a little off.
       if (changed && gap < 100) {
         perfSum += gap; perfCount++;
         if (perfCount >= 45) {
           const avg = perfSum / perfCount; perfSum = perfCount = 0;
           const ratio = renderer.getPixelRatio();
-          if (avg > 26 && ratio > MIN_RATIO) { renderer.setPixelRatio(Math.max(MIN_RATIO, ratio - 0.25)); steamScale(); }
+          if (avg > 40 && ratio > MIN_RATIO) { renderer.setPixelRatio(Math.max(MIN_RATIO, ratio - 0.125)); steamScale(); }
         }
       }
     }
