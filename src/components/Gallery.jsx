@@ -14,6 +14,9 @@ function Chevron({ flip }) {
 
 // Circular photo carousel. Every photo is a real <img> in the markup (that is
 // what lets Google Images index them); the track only slides them into view.
+// No loading="lazy" here on purpose: the slides sit outside the viewport sideways, and
+// crawlers only expand the viewport downwards, so lazy slides would never be fetched.
+// The whole set is under 300 KB, and the 3D scene fetches most of these files anyway.
 export default function Gallery() {
   const { t, lang } = useLanguage();
   const [index, setIndex] = useState(0);
@@ -64,7 +67,6 @@ export default function Gallery() {
                 alt={img[lang]}
                 width={img.w}
                 height={img.h}
-                loading="lazy"
                 decoding="async"
                 draggable="false"
                 style={{ objectPosition: img.focus }}
