@@ -14,7 +14,7 @@ export const PROJECT_URLS = {
 };
 
 export const SOCIAL = [
-  'https://www.linkedin.com/in/matin-movafagh-11594b3b0/',
+  'https://www.linkedin.com/in/matin-movafagh/',
   'https://github.com/matinmovafagh1379-gif',
   'https://www.instagram.com/matin_movafagh/',
   'https://t.me/Matin_movafagh',
