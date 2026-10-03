@@ -7,6 +7,12 @@ export const SITE = 'https://matinmovafagh.ir';
 export const AUTHOR = 'Matin Movafagh';
 export const AUTHOR_FA = 'متین موفق';
 
+// Public project links. Used by the page, the 3D scene and the structured data.
+export const PROJECT_URLS = {
+  otaghbazi: 'https://otaghbazi.vercel.app/',
+  tradingCrm: 'https://crm.matinmovafagh.ir/',
+};
+
 export const SOCIAL = [
   'https://www.linkedin.com/in/matin-movafagh-11594b3b0/',
   'https://github.com/matinmovafagh1379-gif',
@@ -21,7 +27,7 @@ export const PAGES = {
     locale: 'fa_IR',
     title: 'متین موفق | Matin Movafagh — توسعه‌دهنده فرانت‌اند (همدان)',
     description:
-      'متین موفق (Matin Movafagh)، توسعه‌دهنده فرانت‌اند اهل همدان با پیشینه مهندسی برق. نمونه‌کار و عکس‌ها: اتاق‌بازی، Trading CRM، React، HTML، CSS و JavaScript.',
+      'متین موفق (Matin Movafagh)، توسعه‌دهنده فرانت‌اند اهل همدان با پیشینه مهندسی برق. نمونه‌کارها: اتاق‌بازی، Trading CRM و پروژه‌های React و JavaScript.',
     jobDescription: 'متین موفق، توسعه‌دهنده فرانت‌اند اهل همدان با پیشینه مهندسی برق (گرایش الکترونیک).',
   },
   en: {
@@ -29,7 +35,7 @@ export const PAGES = {
     locale: 'en_US',
     title: 'Matin Movafagh | متین موفق — Frontend Developer from Hamedan',
     description:
-      'Matin Movafagh (متین موفق) — frontend developer from Hamedan, Iran. Portfolio, projects and photos: OtaghBazi, Trading CRM, React, HTML, CSS, JavaScript.',
+      'Matin Movafagh (متین موفق) — frontend developer from Hamedan, Iran. Portfolio and projects: OtaghBazi, Trading CRM, and other React and JavaScript work.',
     jobDescription: 'Matin Movafagh is a frontend developer from Hamedan, Iran with a background in electrical/electronics engineering.',
   },
 };
@@ -113,7 +119,7 @@ export function jsonLd(lang) {
         name: AUTHOR,
         givenName: 'Matin',
         familyName: 'Movafagh',
-        alternateName: [AUTHOR_FA, 'MatinMovafagh'],
+        alternateName: [AUTHOR_FA, 'MatinMovafagh', 'matin_movafagh'],
         jobTitle: 'Frontend Developer',
         description: page.jobDescription,
         url: SITE + '/',
@@ -125,9 +131,9 @@ export function jsonLd(lang) {
           '@type': 'Occupation',
           name: 'Frontend Developer',
           occupationLocation: { '@type': 'City', name: 'Hamedan' },
-          skills: 'HTML, CSS, JavaScript, React, Git, GitHub, Vite, Tailwind',
+          skills: 'JavaScript, React, Git, GitHub, Vite, Tailwind CSS',
         },
-        knowsAbout: ['Frontend development', 'HTML', 'CSS', 'JavaScript', 'React', 'Git', 'GitHub', 'Vite', 'Tailwind CSS'],
+        knowsAbout: ['Frontend development', 'Web development', 'JavaScript', 'React', 'Git', 'GitHub', 'Vite', 'Tailwind CSS'],
         sameAs: SOCIAL,
       },
       {
@@ -135,7 +141,7 @@ export function jsonLd(lang) {
         '@id': `${SITE}/#website`,
         url: SITE + '/',
         name: AUTHOR,
-        alternateName: [AUTHOR_FA, 'matinmovafagh.ir'],
+        alternateName: [AUTHOR_FA, 'Matin Movafagh Portfolio', 'matinmovafagh.ir'],
         inLanguage: ['fa-IR', 'en'],
         publisher: { '@id': `${SITE}/#person` },
       },
@@ -157,7 +163,7 @@ export function jsonLd(lang) {
         '@id': `${SITE}/#otaghbazi`,
         name: 'OtaghBazi',
         description: "Website for a kids' play and psychology center, focused on a friendly experience that fits a children's space.",
-        url: 'https://otaghbazi.vercel.app/',
+        url: PROJECT_URLS.otaghbazi,
         creator: { '@id': `${SITE}/#person` },
       },
       {
@@ -167,7 +173,7 @@ export function jsonLd(lang) {
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         description: 'React-based CRM for a trading company: user roles, dashboard, charts, customer management and Excel export.',
-        url: 'https://trading-crm-fam-git-main-matin22.vercel.app/',
+        url: PROJECT_URLS.tradingCrm,
         author: { '@id': `${SITE}/#person` },
       },
     ],

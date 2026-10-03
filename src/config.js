@@ -1,6 +1,6 @@
 // Personal links, project URLs and which photo goes where in the 3D scene.
 // Photos live in /public/images; their alt text and dimensions are in seo.js.
-import { imagePath } from './seo.js';
+import { imagePath, PROJECT_URLS } from './seo.js';
 
 export const CONFIG = {
   linkedin:  'https://www.linkedin.com/in/matin-movafagh-11594b3b0/',
@@ -23,8 +23,5 @@ export const CONFIG = {
       imagePath('matin-movafagh-frontend-developer.jpg'),
     ],
   },
-  projects: {
-    otaghbazi: 'https://otaghbazi.vercel.app/',
-    tradingCrm: 'https://trading-crm-fam-git-main-matin22.vercel.app/',
-  },
+  projects: PROJECT_URLS,
 };

@@ -33,17 +33,24 @@ function scrollU() {
   const f = (view - centers[i]) / (centers[i + 1] - centers[i]);
   return i + smooth(0.14, 0.86, f);
 }
+const railFill = $('#rail i');
+const shownOpacity = new Array(N).fill('');
+let shownRail = '';
 function updateText() {
   const view = scrollY + vh / 2;
   for (let i = 0; i < N; i++) {
     const t = Math.abs(view - centers[i]) / (heights[i] / 2);
     const a = 1 - smooth(0.5, 1.0, t);
-    pins[i].style.opacity = a.toFixed(3);
+    const o = a.toFixed(3);
+    if (o === shownOpacity[i]) continue;
+    shownOpacity[i] = o;
+    pins[i].style.opacity = o;
     pins[i].style.pointerEvents = a < 0.2 ? 'none' : '';
   }
   const max = document.documentElement.scrollHeight - vh;
   const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
-  $('#rail i').style.height = (p * 100).toFixed(2) + '%';
+  const rail = (p * 100).toFixed(2) + '%';
+  if (rail !== shownRail) { shownRail = rail; railFill.style.height = rail; }
 }
 
 /* language: set by React through setLang() */
@@ -53,21 +60,26 @@ let onLangChange = null;
 function start3D() {
   if (typeof THREE === 'undefined') { root.classList.add('no-webgl', 'ready'); return; }
   const coarse = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
+  // High-density screens already hide aliasing, and MSAA at 2x is expensive.
+  const dpr = devicePixelRatio || 1;
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: !coarse, alpha: false, powerPreference: coarse ? 'default' : 'high-performance', failIfMajorPerformanceCaveat: false });
+    renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: !coarse && dpr < 1.75, alpha: false, powerPreference: coarse ? 'default' : 'high-performance', failIfMajorPerformanceCaveat: false });
   } catch (e) {
     try { renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: false }); }
     catch (e2) { root.classList.add('no-webgl', 'ready'); return; }
   }
   $('#gl').addEventListener('webglcontextlost', (e) => { e.preventDefault(); root.classList.add('no-webgl'); }, false);
 
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2));
+  const MIN_RATIO = coarse ? 0.8 : 1;
+  renderer.setPixelRatio(Math.min(dpr, coarse ? 1.25 : 1.75));
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = !coarse;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Only the cup and the phone ever move, so the shadow map is refreshed on demand.
+  renderer.shadowMap.autoUpdate = false;
 
   const WARM_BG = new THREE.Color(0x160e0a), COOL_BG = new THREE.Color(0x09111a);
   const scene = new THREE.Scene();
@@ -356,8 +368,8 @@ function start3D() {
     '  role: "Frontend Developer",',
     '  from: "Electrical Engineering",',
     '  base: "Hamedan",',
-    '  stack: ["HTML", "CSS"],',
-    '  learning: ["JavaScript", "React"],',
+    '  stack: ["JavaScript", "React"],',
+    '  tools: ["Vite", "Tailwind"],',
     '  fuel: "coffee",',
     '};',
     '',
@@ -396,7 +408,7 @@ function start3D() {
   function clearProject() { activeProject = null; lastKey = ''; setZoom(false); $$('.row[data-p]').forEach(r => r.classList.remove('active')); }
   $$('.row[data-p]').forEach(row => {
     const pick = () => {
-      if (activeProject === row.dataset.p) { clearProject(); return; }
+      if (activeProject === row.dataset.p) return;
       $$('.row[data-p]').forEach(r => r.classList.toggle('active', r === row));
       activeProject = row.dataset.p; lastKey = ''; setZoom(true);
     };
@@ -500,8 +512,8 @@ function start3D() {
     if (L >= 5) { x.fillStyle = '#c2ad95'; x.font = '20px "Vazirmatn", "Bricolage Grotesque", sans-serif'; x.fillText('Electrical Engineering background', px, py + 172); }
     if (L >= 6) { x.fillStyle = '#c2ad95'; x.fillText('Based in Hamedan', px, py + 204); }
     const chip = (t, cx, cy, col) => { x.font = '600 19px "Vazirmatn", "Bricolage Grotesque", sans-serif'; const w = x.measureText(t).width + 28; x.fillStyle = col + '33'; rrect(x, cx, cy, w, 36, 18); x.fill(); x.fillStyle = col; x.fillText(t, cx + 14, cy + 25); return w + 10; };
-    if (L >= 7) { let cx = px; cx += chip('HTML', cx, py + 236, '#ffab5c'); chip('CSS', cx, py + 236, '#ffab5c'); }
-    if (L >= 8) { let cx = px; cx += chip('JavaScript', cx, py + 284, '#7fd6ff'); chip('React', cx, py + 284, '#7fd6ff'); }
+    if (L >= 7) { let cx = px; cx += chip('JavaScript', cx, py + 236, '#ffab5c'); chip('React', cx, py + 236, '#ffab5c'); }
+    if (L >= 8) { let cx = px; cx += chip('Vite', cx, py + 284, '#7fd6ff'); chip('Tailwind', cx, py + 284, '#7fd6ff'); }
     if (L >= 9) { x.fillStyle = '#f3dcc0'; x.font = '600 22px "Vazirmatn", "Bricolage Grotesque", sans-serif'; x.fillText('Fuel: coffee', px + 34, py + 372); x.strokeStyle = '#ffab5c'; x.lineWidth = 3; x.beginPath(); x.moveTo(px + 2, py + 356); x.lineTo(px + 20, py + 356); x.lineTo(px + 18, py + 374); x.lineTo(px + 6, py + 374); x.closePath(); x.stroke(); x.beginPath(); x.arc(px + 21, py + 362, 5, -1.5, 1.5); x.stroke(); }
     if (L >= 18) { x.fillStyle = '#5ad07a22'; rrect(x, px, py + 410, 300, 40, 10); x.fill(); x.fillStyle = '#5ad07a'; x.font = '600 19px "Vazirmatn", "Bricolage Grotesque", sans-serif'; x.fillText('Built successfully', px + 16, py + 436); }
     }
@@ -668,16 +680,28 @@ function start3D() {
   })();
 
   /* sizing */
-  let W = 0, H = 0, aspect = 1;
+  let W = 0, H = 0, aspect = 1, needsRender = true;
+  let boxW = 0, boxH = 0;
+  function steamScale() { steamU.uScale.value = (H * renderer.getPixelRatio()) / (2 * Math.tan(camera.fov * Math.PI / 360)); }
   function resize() {
-    W = innerWidth; H = innerHeight; aspect = W / H;
-    renderer.setSize(W, H, false); camera.aspect = aspect;
-    camera.fov = aspect < 0.8 ? 52 : 40; camera.updateProjectionMatrix();
-    steamU.uScale.value = (H * renderer.getPixelRatio()) / (2 * Math.tan(camera.fov * Math.PI / 360));
+    // The canvas is sized in CSS with the large viewport unit, so it keeps its size when a
+    // phone's address bar slides in and out. Resizing the drawing buffer on every scroll
+    // gesture was a major source of stutter.
+    const box = renderer.domElement.getBoundingClientRect();
+    const w = Math.round(box.width) || innerWidth, h = Math.round(box.height) || innerHeight;
+    if (w !== boxW || h !== boxH) {
+      boxW = w; boxH = h; W = w; H = h; aspect = W / H;
+      renderer.setSize(W, H, false); camera.aspect = aspect;
+      camera.fov = aspect < 0.8 ? 52 : 40; camera.updateProjectionMatrix();
+      steamScale(); needsRender = true;
+    }
     measure();
   }
   addEventListener('resize', resize);
   resize();
+
+  // A language switch redraws the screens; make sure the next frame is drawn.
+  const langBefore = onLangChange; onLangChange = () => { langBefore(); needsRender = true; };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   addEventListener('load', measure);
 
@@ -718,11 +742,14 @@ function start3D() {
   const zoomP = new THREE.Vector3(), zoomL = new THREE.Vector3();
   const AMBER = new THREE.Color(0xffab5c), CYAN = new THREE.Color(0x7fd6ff), accentC = new THREE.Color();
   let su = 0, zoomT = 0, lastAccent = '', prevType = 0, last = performance.now(), typeAcc = 0, firstFrame = true;
+  let lastSig = '', lastRender = 0, lastScreenDraw = 0, lastSip = -1, lastReveal = -1;
+  let perfSum = 0, perfCount = 0;
   const WORK_INDEX = POSES.length - 2;
   const contactPinEl = document.querySelector('.contact .pin');
 
   function frame(now) {
     requestAnimationFrame(frame);
+    if (document.hidden) { last = now; return; }
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
     const target = scrollU();
     su += (target - su) * (1 - Math.exp(-dt * (reduceMotion ? 18 : 5.5)));
@@ -748,8 +775,13 @@ function start3D() {
     if (Math.abs(zoomTarget - zoomT) < 0.0015) zoomT = zoomTarget;
     if (zoomT > 0.0015) {
       const vHalf = Math.tan(camera.fov * Math.PI / 360), hHalf = vHalf * camera.aspect;
-      const d = Math.min(1.55 / 2 / vHalf, 2.76 / 2 / hHalf);
-      zoomL.set(MON.x, 1.5, MON.z + 0.007); zoomP.set(MON.x, 1.5, MON.z + 0.007 + d);
+      // Distance at which the whole screen is visible. The larger of the two fits is needed:
+      // taking the smaller one cropped the monitor to a sliver on tall phone screens.
+      const d = Math.max(1.55 / 2 / vHalf, 2.76 / 2 / hHalf) * 1.04;
+      // On tall screens the project card sits under the monitor, so lift the monitor
+      // into the upper part of the view.
+      const lift = camera.aspect < 0.8 ? 0.16 * 2 * vHalf * d : 0;
+      zoomL.set(MON.x, 1.5 - lift, MON.z + 0.007); zoomP.set(MON.x, 1.5 - lift, MON.z + 0.007 + d);
       tmpP.lerp(zoomP, zoomT); tmpL.lerp(zoomL, zoomT);
     }
     const reveal = phoneGroup ? smooth(5.2, 5.95, u) : 0;
@@ -796,7 +828,7 @@ function start3D() {
     renderer.toneMappingExposure = 1.15;
 
     /* accent color follows the story: amber -> cyan */
-    accentC.copy(AMBER).lerp(CYAN, cool);
+    accentC.copy(AMBER).lerp(CYAN, Math.round(cool * 24) / 24);
     const hex = '#' + accentC.getHexString();
     if (hex !== lastAccent) { root.style.setProperty('--accent', hex); lastAccent = hex; }
 
@@ -813,7 +845,12 @@ function start3D() {
     }
     if (keyDirty || firstFrame) keys.instanceColor.needsUpdate = true;
     const blink = typeP >= 1 ? ((t * 1.6) | 0) % 2 : 0;
-    if (drawScreen(chars, blink)) screenTex.needsUpdate = true;
+    let changed = false;
+    // While text is being typed the 1280x720 screen is redrawn and re-uploaded; 30 times a second is plenty.
+    if (chars === 0 || chars >= TOTAL || now - lastScreenDraw > 33) {
+      if (drawScreen(chars, blink)) { screenTex.needsUpdate = true; lastScreenDraw = now; changed = true; }
+    }
+    if (keyDirty) changed = true;
 
     /* video on the monitor while reading About */
     if (video) {
@@ -821,9 +858,34 @@ function start3D() {
       videoMesh.material.opacity = vm; videoMesh.visible = vm > 0.01;
       if (vm > 0.01 && video.paused) video.play().catch(() => {});
       if (vm <= 0.01 && !video.paused) video.pause();
+      if (vm > 0.01) changed = true;
     }
 
-    renderer.render(scene, camera);
+    const cp = camera.position;
+    const sig = su.toFixed(5) + cp.x.toFixed(4) + cp.y.toFixed(4) + cp.z.toFixed(4) + tmpL.x.toFixed(4) + tmpL.y.toFixed(4) + tmpL.z.toFixed(4) + reveal.toFixed(4) + zoomT.toFixed(4);
+    if (sig !== lastSig) { lastSig = sig; changed = true; }
+    if (steam.visible) changed = true;
+    if (changed) needsRender = true;
+
+    // Idle frames (nothing moving) are skipped; one frame every 250 ms still catches late image loads.
+    if (needsRender || now - lastRender > 250) {
+      if (firstFrame || Math.abs(sip - lastSip) > 1e-4 || Math.abs(reveal - lastReveal) > 1e-4) {
+        renderer.shadowMap.needsUpdate = true; lastSip = sip; lastReveal = reveal;
+      }
+      const gap = now - lastRender;
+      renderer.render(scene, camera);
+      lastRender = now; needsRender = false;
+
+      // Adaptive resolution: if sustained animation runs under ~38 fps, render fewer pixels.
+      if (changed && gap < 100) {
+        perfSum += gap; perfCount++;
+        if (perfCount >= 45) {
+          const avg = perfSum / perfCount; perfSum = perfCount = 0;
+          const ratio = renderer.getPixelRatio();
+          if (avg > 26 && ratio > MIN_RATIO) { renderer.setPixelRatio(Math.max(MIN_RATIO, ratio - 0.25)); steamScale(); }
+        }
+      }
+    }
     if (firstFrame) { firstFrame = false; requestAnimationFrame(() => root.classList.add('ready')); }
   }
   requestAnimationFrame(frame);
