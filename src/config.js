@@ -3,7 +3,7 @@
 import { imagePath, PROJECT_URLS } from './seo.js';
 
 export const CONFIG = {
-  linkedin:  'https://www.linkedin.com/in/matin-movafagh-11594b3b0/',
+  linkedin:  'https://www.linkedin.com/in/matin-movafagh/',
   github:    'https://github.com/matinmovafagh1379-gif',
   instagram: 'https://www.instagram.com/matin_movafagh/',
   telegram:  'https://t.me/Matin_movafagh',

@@ -2,11 +2,14 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { paragraphs } from '../translations.js';
 import { CONFIG } from '../config.js';
 
-// `id` matches the w1/w2/w3 keys in translations.js and the data-p hook used by the 3D scene.
+// `id` matches the w1..w5 keys in translations.js and the data-p hook used by the 3D scene.
+// The order of this list is the order on the page.
 const PROJECTS = [
-  { id: 'w1' },
-  { id: 'w2', url: CONFIG.projects.otaghbazi },
   { id: 'w3', url: CONFIG.projects.tradingCrm },
+  { id: 'w1', url: CONFIG.projects.gamezone },
+  { id: 'w2', url: CONFIG.projects.otaghbazi },
+  { id: 'w4', url: CONFIG.projects.pasargad },
+  { id: 'w5', url: CONFIG.projects.games },
 ];
 
 export default function Work() {

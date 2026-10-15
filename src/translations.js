@@ -32,12 +32,12 @@ export const T = {
     'work.close': '↩ بازگشت به میز کار',
     'w.live': 'پیش‌نمایش زنده ↗',
 
-    'w1.t': 'GameZone Café',
-    'w1.s': 'پروژه‌ی تمرینی',
-    'w1.tags': 'HTML · CSS · JavaScript',
+    'w1.t': 'GameZone 3D',
+    'w1.s': 'پروژه‌ی شخصی',
+    'w1.tags': 'JavaScript · 3D',
     'w1.d': [
-      'یک سایت برای یک گیم‌کافه‌ی خیالی.',
-      'اینجا بیشتر روی ظاهر، چیدمان و ساختن یک فضای تاریک و نئونی کار کردم.',
+      'نسخه‌ی سه‌بعدی گیم‌کافه‌ی خیالی‌ام («کافه گیم»).',
+      'فضای تیره‌ی کافه رو این بار با گرافیک سه‌بعدی ساختم، و برای موبایل هم آماده‌ش کردم.',
     ],
     'w2.t': 'OtaghBazi',
     'w2.s': 'کار مشتری',
@@ -53,6 +53,22 @@ export const T = {
       'یک CRM که برای مدیریت مشتری‌ها و بخش‌های مختلف یک شرکت بازرگانی ساختم.',
       'مدیریت کاربران و نقش‌ها، داشبورد، نمودارها و خروجی Excel بخشی از پروژه است.',
       'این پروژه جایی بود که React برای من از «یاد گرفتن یک تکنولوژی» تبدیل شد به چیزی که واقعاً باهاش یک محصول رو ساختم.',
+    ],
+
+    'w4.t': 'Pasargad 3D',
+    'w4.s': 'پروژه‌ی شخصی',
+    'w4.tags': 'JavaScript · 3D · Blender',
+    'w4.d': [
+      'یک گشت سه‌بعدی در پاسارگاد، نخستین پایتخت هخامنشیان: آرامگاه کوروش، کاخ‌ها و باغ شاهی.',
+      'می‌شود با راهنما گشت یا آزاد قدم زد؛ موقع راه‌رفتن روایت تاریخی پخش می‌شود و برای موبایل کیفیت تصویر پایین‌تری هم دارد.',
+      'بازسازی خیالی است و بر منابعی مثل UNESCO تکیه دارد؛ مدل آرامگاه کوروش رو توی Blender ساختم.',
+    ],
+    'w5.t': 'بازی‌های آموزشی',
+    'w5.s': 'پروژه‌ی آموزشی',
+    'w5.tags': 'HTML · CSS · JavaScript',
+    'w5.d': [
+      'دو بازی آموزشی: «کافه فلکس» برای CSS Flexbox و «نگهبان خط زمان» برای Git و GitHub.',
+      'توی کافه فلکس یک روز کاری در کافه رو می‌گذرونی و Flexbox رو یاد می‌گیری؛ توی نگهبان خط زمان، «متین»، مأمور سازمانی هستی که خط زمان رو نگهبانی می‌کنه.',
     ],
 
     'phone.info': 'لینک‌ها',
@@ -100,12 +116,12 @@ export const T = {
     'work.close': '↩ Back to the desk',
     'w.live': 'Live preview ↗',
 
-    'w1.t': 'GameZone Café',
-    'w1.s': 'Practice project',
-    'w1.tags': 'HTML · CSS · JavaScript',
+    'w1.t': 'GameZone 3D',
+    'w1.s': 'Personal project',
+    'w1.tags': 'JavaScript · 3D',
     'w1.d': [
-      'A website for a fictional gaming café.',
-      'I mainly used this one to play with layout, visuals, and a dark neon atmosphere.',
+      'A 3D version of my fictional gaming café website (“Cafe Game”).',
+      'This time I built the dark café space in 3D, and made it ready for phones too.',
     ],
     'w2.t': 'OtaghBazi',
     'w2.s': 'Client work',
@@ -121,6 +137,22 @@ export const T = {
       'A CRM I built for managing customers and different departments of a trading company.',
       'It includes user and role management, dashboards, charts, and Excel export.',
       'This was the project where React stopped being just something I was learning and became something I was actually using to build a product.',
+    ],
+
+    'w4.t': 'Pasargad 3D',
+    'w4.s': 'Personal project',
+    'w4.tags': 'JavaScript · 3D · Blender',
+    'w4.d': [
+      'A 3D walk through Pasargadae, the first capital of the Achaemenid Persians: the tomb of Cyrus, the palaces and the royal garden.',
+      'You can take a guided tour or walk freely; a historical narration plays as you move, and there is a lower image quality for phones.',
+      'It is an imaginative reconstruction that leans on sources like UNESCO; I made the model of Cyrus’s tomb in Blender.',
+    ],
+    'w5.t': 'Learning games',
+    'w5.s': 'Learning project',
+    'w5.tags': 'HTML · CSS · JavaScript',
+    'w5.d': [
+      'Two educational games: “Flex Cafe” for CSS Flexbox and “Timeline Guardian” for Git and GitHub.',
+      'In Flex Cafe you work a full day at a café and learn Flexbox; in Timeline Guardian you play “Matin”, an agent of an organization that guards the timeline.',
     ],
 
     'phone.info': 'Links',

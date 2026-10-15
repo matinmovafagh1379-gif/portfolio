@@ -404,7 +404,7 @@ function start3D() {
   const avatarSrc = CONFIG.photos.avatar || CONFIG.photo;
   if (avatarSrc) { avatar = new Image(); avatar.crossOrigin = 'anonymous'; avatar.onload = () => { lastKey = ''; }; avatar.src = avatarSrc; }
 
-  const PROJECT_COLOR = { w1: '#ffab5c', w2: '#7fd6ff', w3: '#5ad07a' };
+  const PROJECT_COLOR = { w1: '#ffab5c', w2: '#7fd6ff', w3: '#5ad07a', w4: '#e6b85c', w5: '#c792ea' };
   let activeProject = null, zoomed = false;
   function setZoom(on) { zoomed = on; document.querySelector('.work .pin').classList.toggle('zoomed', on); }
   function clearProject() { activeProject = null; lastKey = ''; setZoom(false); $$('.row[data-p]').forEach(r => r.classList.remove('active')); }

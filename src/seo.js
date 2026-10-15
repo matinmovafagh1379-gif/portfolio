@@ -11,6 +11,9 @@ export const AUTHOR_FA = 'متین موفق';
 export const PROJECT_URLS = {
   otaghbazi: 'https://otaghbazi.vercel.app/',
   tradingCrm: 'https://trading-crm-fam.vercel.app/',
+  gamezone: 'https://gamezone-3d.vercel.app/',
+  pasargad: 'https://pasargad-3d.vercel.app/',
+  games: 'https://githubio-seven.vercel.app/',
 };
 
 export const SOCIAL = [
@@ -27,7 +30,7 @@ export const PAGES = {
     locale: 'fa_IR',
     title: 'متین موفق | Matin Movafagh — توسعه‌دهنده فرانت‌اند (همدان)',
     description:
-      'متین موفق (Matin Movafagh)، توسعه‌دهنده فرانت‌اند اهل همدان با پیشینه مهندسی برق. نمونه‌کارها: اتاق‌بازی، Trading CRM و پروژه‌های React و JavaScript.',
+      'متین موفق (Matin Movafagh)، توسعه‌دهنده فرانت‌اند اهل همدان با پیشینه مهندسی برق. نمونه‌کارها: Trading CRM، GameZone 3D، اتاق‌بازی، پاسارگاد سه‌بعدی و بازی‌های آموزشی.',
     jobDescription: 'متین موفق، توسعه‌دهنده فرانت‌اند اهل همدان با پیشینه مهندسی برق (گرایش الکترونیک).',
   },
   en: {
@@ -35,7 +38,7 @@ export const PAGES = {
     locale: 'en_US',
     title: 'Matin Movafagh | متین موفق — Frontend Developer from Hamedan',
     description:
-      'Matin Movafagh (متین موفق) — frontend developer from Hamedan, Iran. Portfolio and projects: OtaghBazi, Trading CRM, and other React and JavaScript work.',
+      'Matin Movafagh (متین موفق) — frontend developer from Hamedan, Iran. Portfolio and projects: Trading CRM, GameZone 3D, OtaghBazi, Pasargad 3D and learning games.',
     jobDescription: 'Matin Movafagh is a frontend developer from Hamedan, Iran with a background in electrical/electronics engineering.',
   },
 };
@@ -175,6 +178,33 @@ export function jsonLd(lang) {
         description: 'React-based CRM for a trading company: user roles, dashboard, charts, customer management and Excel export.',
         url: PROJECT_URLS.tradingCrm,
         author: { '@id': `${SITE}/#person` },
+      },
+      {
+        '@type': 'CreativeWork',
+        '@id': `${SITE}/#gamezone-3d`,
+        name: 'GameZone 3D',
+        alternateName: 'کافه گیم',
+        description: 'A 3D version of a fictional gaming café website, with a dark theme, built to work on phones too.',
+        url: PROJECT_URLS.gamezone,
+        creator: { '@id': `${SITE}/#person` },
+      },
+      {
+        '@type': 'CreativeWork',
+        '@id': `${SITE}/#pasargad-3d`,
+        name: 'Pasargad 3D',
+        alternateName: 'پاسارگاد سه‌بعدی',
+        description: 'An interactive 3D walk through Pasargadae, the first capital of the Achaemenid Persians: the tomb of Cyrus, palaces and the royal garden, with historical narration.',
+        url: PROJECT_URLS.pasargad,
+        creator: { '@id': `${SITE}/#person` },
+      },
+      {
+        '@type': 'CreativeWork',
+        '@id': `${SITE}/#learning-games`,
+        name: 'Educational games by Matin Movafagh',
+        alternateName: 'بازی‌های آموزشی متین موفق',
+        description: 'Two browser games for learning: FlexCafe (CSS Flexbox) and Timeline Guardian (Git and GitHub).',
+        url: PROJECT_URLS.games,
+        creator: { '@id': `${SITE}/#person` },
       },
     ],
   };
