@@ -452,10 +452,8 @@ function start3D() {
     x.fillStyle = g; x.fillRect(px, py, 6, 138);
     x.fillStyle = '#f7ebd9'; x.font = '700 27px "Vazirmatn", "Bricolage Grotesque", sans-serif';
     wrapText(x, d[key + '.t'], tx0, cy, 420, 32, 2); cy += 68;
-    x.font = '600 16px "Vazirmatn", "Bricolage Grotesque", sans-serif'; x.fillStyle = col; x.fillText(d[key + '.s'], tx0, cy);
     x.textAlign = 'left'; x.direction = 'ltr';
-    cy = py + 158; x.font = '17px "Vazirmatn", "Bricolage Grotesque", sans-serif'; x.fillStyle = '#c2ad95'; x.textAlign = lang === 'fa' ? 'right' : 'left';
-    wrapText(x, paragraphs(d[key + '.d'])[0], tx0, cy, 460, 27, 3); cy += 100;
+    cy = py + 100;
     x.textAlign = 'left'; x.direction = 'ltr';
     let cx = px; tags.forEach(t => { x.font = '600 16px ui-monospace, Menlo, Consolas, monospace'; const w = x.measureText(t).width + 24; x.fillStyle = '#ffffff14'; rrect(x, cx, cy, w, 32, 16); x.fill(); x.fillStyle = '#dbe7f3'; x.fillText(t, cx + 12, cy + 21); cx += w + 8; });
     /* placeholder browser window */
@@ -492,6 +490,27 @@ function start3D() {
     if (line) { x.fillText(line, ox, oy + n * lh); n++; }
     return n;
   }
+  // The round profile picture at the top right of the window, like the signed-in account
+  // picture in a browser's toolbar.
+  let profileImg = null;
+  const profileSrc = CONFIG.photos.avatar || CONFIG.photos.phone || CONFIG.photo;
+  if (profileSrc) { profileImg = new Image(); profileImg.crossOrigin = 'anonymous'; profileImg.onload = () => { lastKey = ''; }; profileImg.src = profileSrc; }
+  function drawProfile(x) {
+    const cx = 1280 - 40, cy = 24, r = 16;
+    x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 6.2832); x.clip();
+    if (profileImg && profileImg.complete && profileImg.naturalWidth) {
+      // wide desk photo: crop a square around him with the monitor still visible behind
+      const iw = profileImg.naturalWidth, ih = profileImg.naturalHeight, side = Math.min(ih * 0.92, iw);
+      const sx = Math.max(0, Math.min(iw - side, iw * 0.5 - side / 2)), sy = Math.max(0, Math.min(ih - side, ih * 0.46 - side / 2));
+      x.drawImage(profileImg, sx, sy, side, side, cx - r, cy - r, 2 * r, 2 * r);
+    } else {
+      const g = x.createLinearGradient(cx - r, cy - r, cx + r, cy + r); g.addColorStop(0, '#ffab5c'); g.addColorStop(1, '#7fd6ff');
+      x.fillStyle = g; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+      x.fillStyle = '#1a1310'; x.font = '700 15px "Bricolage Grotesque", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.direction = 'ltr'; x.fillText('M', cx, cy + 1); x.textBaseline = 'alphabetic';
+    }
+    x.restore();
+    x.beginPath(); x.arc(cx, cy, r + 1.5, 0, 6.2832); x.strokeStyle = 'rgba(242,223,196,.38)'; x.lineWidth = 2; x.stroke();
+  }
   function drawFilesScreen(x) {
     const W = 1280, H = 720, rtl = lang === 'fa', d = T[lang];
     const F = '"Vazirmatn", "Bricolage Grotesque", sans-serif', M = 'ui-monospace, Menlo, Consolas, monospace';
@@ -511,6 +530,7 @@ function start3D() {
     x.fillStyle = '#0d141d'; rrect(x, 140, 10, 190, 38, 8); x.fill();
     x.fillStyle = '#ffab5c'; rrect(x, 154, 24, 16, 12, 3); x.fill();
     lat(); x.fillStyle = '#dbe7f3'; x.font = '600 18px ' + F; x.textBaseline = 'middle'; x.fillText('projects', 180, 30); x.textBaseline = 'alphabetic';
+    drawProfile(x);
 
     /* sidebar */
     x.fillStyle = '#0b121a'; x.fillRect(0, 48, 250, H - 48 - 30);
@@ -531,12 +551,10 @@ function start3D() {
 
     if (!activeProject) {
       x.fillText('~ / projects', LEFT, 80);
-      lat('right'); x.fillText(rtl ? ids.length.toLocaleString('fa') + ' مورد' : ids.length + ' items', RIGHT, 80);
 
       loc(); x.fillStyle = '#f7ebd9'; x.font = '700 42px ' + F; x.fillText(d['work.h'], edge, 156);
-      x.fillStyle = '#c2ad95'; x.font = '19px ' + F; wrapLines(x, d['work.p'], edge, 194, 800, 28, 2);
 
-      const top = 256, rh = 74;
+      const top = 214, rh = 84;
       ids.forEach((id, i) => {
         const y = top + i * rh, c = col(id), hot = hoverId === id;
         if (hot) { x.fillStyle = c + '1c'; rrect(x, LEFT - 16, y + 3, RIGHT - LEFT + 32, rh - 6, 12); x.fill(); x.strokeStyle = c + '77'; x.lineWidth = 1.5; x.stroke(); }
@@ -546,10 +564,8 @@ function start3D() {
         x.fillStyle = c + '26'; rrect(x, ix, iy, 34, 44, 6); x.fill(); x.strokeStyle = c; x.lineWidth = 2; x.stroke();
         x.fillStyle = c; x.fillRect(ix + 8, iy + 18, 18, 2.5); x.fillRect(ix + 8, iy + 26, 18, 2.5); x.fillRect(ix + 8, iy + 34, 11, 2.5);
         // name + first line of the description
-        loc(); x.fillStyle = hot ? '#fff3df' : '#f7ebd9'; x.font = '700 26px ' + F; x.fillText(d[id + '.t'], at(56), y + 33);
-        x.fillStyle = '#8a97a3'; x.font = '16px ' + F; x.fillText(fitText(x, paragraphs(d[id + '.d'])[0], 560), at(56), y + 58);
+        loc(); x.fillStyle = hot ? '#fff3df' : '#f7ebd9'; x.font = '700 26px ' + F; x.fillText(d[id + '.t'], at(56), y + 49);
         // status + chevron
-        x.textAlign = alEnd; x.direction = rtl ? 'rtl' : 'ltr'; x.fillStyle = c; x.font = '600 16px ' + F; x.fillText(d[id + '.s'], rtl ? LEFT + 30 : RIGHT - 30, y + 42);
         x.strokeStyle = hot ? c : '#5f7186'; x.lineWidth = 2.5; x.beginPath();
         const cx0 = rtl ? LEFT + 6 : RIGHT - 6, dir = rtl ? 1 : -1;
         x.moveTo(cx0 + dir * 7, y + 30); x.lineTo(cx0, y + 38); x.lineTo(cx0 + dir * 7, y + 46); x.stroke();
@@ -557,7 +573,7 @@ function start3D() {
       });
       loc(); x.fillStyle = '#5f7186'; x.font = '15px ' + F; x.fillText(d['files.hint'], edge, 668);
       x.fillStyle = '#ffab5c'; x.fillRect(0, H - 30, W, 30);
-      lat(); x.fillStyle = '#1a1310'; x.font = '600 15px ' + M; x.textBaseline = 'middle'; x.fillText('~/projects  ·  ' + ids.length + ' items', 18, H - 15); x.textBaseline = 'alphabetic';
+      lat(); x.fillStyle = '#1a1310'; x.font = '600 15px ' + M; x.textBaseline = 'middle'; x.fillText('~/projects', 18, H - 15); x.textBaseline = 'alphabetic';
       return;
     }
 
@@ -584,11 +600,7 @@ function start3D() {
     loc(); x.fillStyle = '#f7ebd9'; x.font = '700 54px ' + F;
     const tl = wrapLines(x, d[id + '.t'], edge, 170, COLW, 62, 2);
     let y = 170 + (tl - 1) * 62 + 34;
-    x.font = '700 17px ' + F; const sw = Math.ceil(x.measureText(d[id + '.s']).width) + 32;
-    const sx0 = rtl ? RIGHT - sw : LEFT;
-    x.fillStyle = c + '2a'; rrect(x, sx0, y - 4, sw, 34, 17); x.fill();
-    x.fillStyle = c; x.textAlign = 'center'; x.fillText(d[id + '.s'], sx0 + sw / 2, y + 19);
-    y += 52;
+
     let tx = 0;
     (d[id + '.tags'] || '').split(' · ').forEach(tag => {
       x.font = '600 15px ' + M; const tw = Math.ceil(x.measureText(tag).width) + 24;
@@ -597,10 +609,6 @@ function start3D() {
       x.fillStyle = '#dbe7f3'; lat(); x.fillText(tag, chipX + 12, y + 17);
       tx += tw + 8;
     });
-    y += 68;
-    // every paragraph of the description
-    loc(); x.fillStyle = '#c2ad95'; x.font = '19px ' + F;
-    paragraphs(d[id + '.d']).forEach(par => { const n = wrapLines(x, par, edge, y, COLW, 29, 3); y += n * 29 + 12; });
 
     // "open the live site" button
     const lx = rtl ? RIGHT - 300 : LEFT, lhot = hoverId === 'live';
@@ -644,6 +652,7 @@ function start3D() {
     x.fillStyle = '#0d141d'; rrect(x, 140, 10, 170, 38, 8); x.fill();
     x.fillStyle = '#dbe7f3'; x.font = '600 18px "Vazirmatn", "Bricolage Grotesque", sans-serif'; x.textBaseline = 'middle'; x.fillText('matin.js', 168, 30);
     x.fillStyle = '#ffab5c'; x.beginPath(); x.arc(154, 30, 4, 0, 6.2832); x.fill();
+    drawProfile(x); x.textAlign = 'left'; x.textBaseline = 'alphabetic';
     /* gutter */
     x.fillStyle = '#0b121a'; x.fillRect(0, 48, 64, H - 48 - 30);
     /* code */

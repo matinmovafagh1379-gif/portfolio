@@ -25,9 +25,9 @@ export const T = {
 
     'skills.h': 'ابزارهایی که باهاشون کار می‌کنم',
 
-    'work.h': 'چندتا از چیزهایی که ساخته‌ام.',
+    'work.h': 'بخشی از نمونه‌کارهای من',
     'work.label': 'نمونه‌کارها',
-    'work.p': 'بعضی برای تمرین، بعضی برای مشتری و بعضی برای اینکه خودم ببینم تا کجا می‌تونم پیش برم.',
+    'work.p': '',
     'work.hint': 'روی یک پروژه بزن ↑',
     'work.close': '↩ بازگشت به میز کار',
     'w.live': 'پیش‌نمایش زنده ↗',
@@ -112,9 +112,9 @@ export const T = {
 
     'skills.h': 'Tools I work with',
 
-    'work.h': 'A few things I’ve built.',
+    'work.h': 'Some of my work',
     'work.label': 'Selected work',
-    'work.p': 'Some were practice projects, some were client work, and some were built simply because I wanted to see how far I could take an idea.',
+    'work.p': '',
     'work.hint': 'Tap a project ↑',
     'work.close': '↩ Back to the desk',
     'w.live': 'Live preview ↗',

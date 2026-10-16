@@ -20,7 +20,6 @@ export default function Work() {
         <div className="wrap">
           <button type="button" id="screenClose" className="screen-close">{t('work.close')}</button>
           <h2>{t('work.h')}</h2>
-          <p className="lead">{t('work.p')}</p>
           <p className="hint">{t('work.hint')}</p>
           <ul className="rows">
             {PROJECTS.map(({ id, url }) => (
@@ -32,7 +31,6 @@ export default function Work() {
                   ))}
                 </div>
                 <span className="state">
-                  <span>{t(`${id}.s`)}</span>
                   {url && (
                     <a
                       className="live"
