@@ -495,6 +495,17 @@ function start3D() {
   let profileImg = null;
   const profileSrc = CONFIG.photos.avatar || CONFIG.photos.phone || CONFIG.photo;
   if (profileSrc) { profileImg = new Image(); profileImg.crossOrigin = 'anonymous'; profileImg.onload = () => { lastKey = ''; }; profileImg.src = profileSrc; }
+  // Project screenshots for the detail view's browser window.
+  const shotImgs = {};
+  Object.keys(CONFIG.photos.shots || {}).forEach(id => {
+    shotImgs[id] = CONFIG.photos.shots[id].map(sh => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => { lastKey = ''; }; im.src = sh.src; return { im, fx: sh.fx, fy: sh.fy, stack: !!sh.stack }; });
+  });
+  function drawCover(x, sh, rx, ry, rw, rh) {
+    const im = sh.im; if (!(im.complete && im.naturalWidth)) return false;
+    const k = Math.max(rw / im.naturalWidth, rh / im.naturalHeight), sw = rw / k, sh2 = rh / k;
+    const sx = (im.naturalWidth - sw) * sh.fx, sy = (im.naturalHeight - sh2) * sh.fy;
+    x.drawImage(im, sx, sy, sw, sh2, rx, ry, rw, rh); return true;
+  }
   function drawProfile(x) {
     const cx = 1280 - 40, cy = 24, r = 16;
     x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 6.2832); x.clip();
@@ -554,7 +565,7 @@ function start3D() {
 
       loc(); x.fillStyle = '#f7ebd9'; x.font = '700 42px ' + F; x.fillText(d['work.h'], edge, 156);
 
-      const top = 214, rh = 84;
+      const top = 232, rh = 76;
       ids.forEach((id, i) => {
         const y = top + i * rh, c = col(id), hot = hoverId === id;
         if (hot) { x.fillStyle = c + '1c'; rrect(x, LEFT - 16, y + 3, RIGHT - LEFT + 32, rh - 6, 12); x.fill(); x.strokeStyle = c + '77'; x.lineWidth = 1.5; x.stroke(); }
@@ -564,7 +575,8 @@ function start3D() {
         x.fillStyle = c + '26'; rrect(x, ix, iy, 34, 44, 6); x.fill(); x.strokeStyle = c; x.lineWidth = 2; x.stroke();
         x.fillStyle = c; x.fillRect(ix + 8, iy + 18, 18, 2.5); x.fillRect(ix + 8, iy + 26, 18, 2.5); x.fillRect(ix + 8, iy + 34, 11, 2.5);
         // name + first line of the description
-        loc(); x.fillStyle = hot ? '#fff3df' : '#f7ebd9'; x.font = '700 26px ' + F; x.fillText(d[id + '.t'], at(56), y + 49);
+        loc(); x.fillStyle = hot ? '#fff3df' : '#f7ebd9'; x.font = '700 26px ' + F; x.fillText(d[id + '.t'], at(56), y + 33);
+        x.fillStyle = '#8a97a3'; x.font = '16px ' + F; x.fillText(fitText(x, d[id + '.k'] || '', 640), at(56), y + 58);
         // status + chevron
         x.strokeStyle = hot ? c : '#5f7186'; x.lineWidth = 2.5; x.beginPath();
         const cx0 = rtl ? LEFT + 6 : RIGHT - 6, dir = rtl ? 1 : -1;
@@ -609,12 +621,20 @@ function start3D() {
       x.fillStyle = '#dbe7f3'; lat(); x.fillText(tag, chipX + 12, y + 17);
       tx += tw + 8;
     });
+    // the case study: what it is, the challenge, the result
+    y += 62;
+    const paras = paragraphs(d[id + '.d']), heads = [null, d['case.b'], d['case.c']];
+    paras.forEach((par, i) => {
+      if (heads[i]) { loc(); x.fillStyle = c; x.font = '700 15px ' + F; x.fillText(heads[i], edge, y); y += 24; }
+      loc(); x.fillStyle = '#c2ad95'; x.font = '17px ' + F;
+      const n = wrapLines(x, par, edge, y, COLW, 26, i === 0 ? 4 : 3); y += n * 26 + 14;
+    });
 
     // "open the live site" button
     const lx = rtl ? RIGHT - 300 : LEFT, lhot = hoverId === 'live';
-    x.fillStyle = lhot ? '#ffffff' : c; rrect(x, lx, 622, 300, 52, 26); x.fill();
-    x.fillStyle = '#1a1310'; x.font = '700 20px ' + F; x.textAlign = 'center'; x.direction = rtl ? 'rtl' : 'ltr'; x.fillText(d['w.live'], lx + 150, 655);
-    uiRects.push({ id: 'live', act: 'live', x: lx, y: 622, w: 300, h: 52 });
+    x.fillStyle = lhot ? '#ffffff' : c; rrect(x, lx, 634, 300, 48, 24); x.fill();
+    x.fillStyle = '#1a1310'; x.font = '700 20px ' + F; x.textAlign = 'center'; x.direction = rtl ? 'rtl' : 'ltr'; x.fillText(d['w.live'], lx + 150, 665);
+    uiRects.push({ id: 'live', act: 'live', x: lx, y: 634, w: 300, h: 48 });
 
     // a small browser window showing the project
     const wx = rtl ? LEFT : RIGHT - BW, wy = 130, wh = 450;
@@ -624,13 +644,32 @@ function start3D() {
     ['#ff6b5c', '#ffbd44', '#5ad07a'].forEach((cc, i) => { x.fillStyle = cc; x.beginPath(); x.arc(wx + 20 + i * 18, wy + 20, 5, 0, 6.2832); x.fill(); });
     x.fillStyle = '#0b121a'; rrect(x, wx + 88, wy + 9, BW - 104, 22, 11); x.fill();
     lat(); x.fillStyle = '#8a97a3'; x.font = '13px ' + M; x.fillText(fitText(x, hostOf(url), BW - 130), wx + 100, wy + 25);
-    const g = x.createLinearGradient(wx, wy + 40, wx, wy + wh); g.addColorStop(0, c + '33'); g.addColorStop(1, '#0b121a');
-    x.fillStyle = g; x.save(); rrect(x, wx + 1, wy + 41, BW - 2, wh - 42, 11); x.clip(); x.fillRect(wx + 1, wy + 41, BW - 2, wh - 42); x.restore();
-    x.fillStyle = c; x.font = '700 120px ' + F; x.textAlign = 'center'; x.direction = 'ltr'; x.globalAlpha = 0.9;
-    x.fillText((FILE_NAME[id] || id)[0].toUpperCase(), wx + BW / 2, wy + 200); x.globalAlpha = 1;
-    x.fillStyle = c + '66'; rrect(x, wx + 30, wy + 250, 170, 16, 8); x.fill();
-    x.fillStyle = '#ffffff1f'; rrect(x, wx + 30, wy + 282, BW - 60, 11, 5); x.fill(); rrect(x, wx + 30, wy + 304, BW - 120, 11, 5); x.fill(); rrect(x, wx + 30, wy + 326, BW - 90, 11, 5); x.fill();
-    x.fillStyle = c + 'aa'; rrect(x, wx + 30, wy + 370, 120, 34, 17); x.fill();
+    const shots = shotImgs[id] || [];
+    const ax = wx + 12, ay = wy + 52, aw = BW - 24, ah = wh - 64;
+    let drew = false;
+    if (shots.length) {
+      x.save(); rrect(x, wx + 1, wy + 41, BW - 2, wh - 42, 11); x.clip(); x.fillStyle = '#0b121a'; x.fillRect(wx, wy + 40, BW, wh - 40);
+      if (shots.length === 1) { x.save(); rrect(x, ax, ay, aw, ah, 8); x.clip(); drew = drawCover(x, shots[0], ax, ay, aw, ah); x.restore(); }
+      else {
+        const im0 = shots[0].im, wide = shots[0].stack || im0.naturalWidth > im0.naturalHeight;
+        shots.forEach((sh, i) => {
+          let rx, ry, rw, rh;
+          if (wide) { rh = (ah - 10) / 2; rw = aw; rx = ax; ry = ay + i * (rh + 10); }
+          else { rw = (aw - 10) / 2; rh = Math.min(ah, rw * 1.5); rx = ax + (rtl ? 1 - i : i) * (rw + 10); ry = ay + (ah - rh) / 2; }
+          x.save(); rrect(x, rx, ry, rw, rh, 8); x.clip(); if (drawCover(x, sh, rx, ry, rw, rh)) drew = true; x.restore();
+        });
+      }
+      x.restore();
+    }
+    if (!drew) {
+      const g = x.createLinearGradient(wx, wy + 40, wx, wy + wh); g.addColorStop(0, c + '33'); g.addColorStop(1, '#0b121a');
+      x.fillStyle = g; x.save(); rrect(x, wx + 1, wy + 41, BW - 2, wh - 42, 11); x.clip(); x.fillRect(wx + 1, wy + 41, BW - 2, wh - 42); x.restore();
+      x.fillStyle = c; x.font = '700 120px ' + F; x.textAlign = 'center'; x.direction = 'ltr'; x.globalAlpha = 0.9;
+      x.fillText((FILE_NAME[id] || id)[0].toUpperCase(), wx + BW / 2, wy + 200); x.globalAlpha = 1;
+      x.fillStyle = c + '66'; rrect(x, wx + 30, wy + 250, 170, 16, 8); x.fill();
+      x.fillStyle = '#ffffff1f'; rrect(x, wx + 30, wy + 282, BW - 60, 11, 5); x.fill(); rrect(x, wx + 30, wy + 304, BW - 120, 11, 5); x.fill(); rrect(x, wx + 30, wy + 326, BW - 90, 11, 5); x.fill();
+      x.fillStyle = c + 'aa'; rrect(x, wx + 30, wy + 370, 120, 34, 17); x.fill();
+    }
     uiRects.push({ id: 'live', act: 'live', x: wx, y: wy, w: BW, h: wh });
 
     x.fillStyle = '#ffab5c'; x.fillRect(0, H - 30, W, 30);
