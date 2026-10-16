@@ -218,7 +218,10 @@ function start3D() {
   const mNeck = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.85, 0.07), metal); mNeck.position.set(0, 0.45, -0.06); mNeck.castShadow = true; monitor.add(mNeck);
   const mBody = roundedBox(2.9, 1.7, 0.09, 0.07, mat({ color: 0x1c1b20, roughness: 0.45, metalness: 0.5 })); mBody.position.set(0, 1.5, -0.04); monitor.add(mBody);
 
-  const SC = document.createElement('canvas'); SC.width = 1280; SC.height = 720; const sx = SC.getContext('2d');
+  // Everything on the screen is drawn in a 1280x720 coordinate space; the canvas itself is 1.5x
+  // bigger on desktops so text stays crisp when the camera fills the view with the monitor.
+  const SCK = coarse ? 1 : 1.5;
+  const SC = document.createElement('canvas'); SC.width = 1280 * SCK; SC.height = 720 * SCK; const sx = SC.getContext('2d');
   const screenTex = new THREE.CanvasTexture(SC); screenTex.encoding = THREE.sRGBEncoding; screenTex.anisotropy = 8;
   const screenMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.76, 1.55), new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false }));
   screenMesh.position.set(0, 1.5, 0.007); monitor.add(screenMesh);
@@ -406,18 +409,26 @@ function start3D() {
 
   const PROJECT_COLOR = { w1: '#ffab5c', w2: '#7fd6ff', w3: '#5ad07a', w4: '#e6b85c', w5: '#c792ea' };
   let activeProject = null, zoomed = false;
+  // Landscape screens: the projects live on the monitor itself, like files in a file explorer.
+  // Portrait screens (phones) keep the DOM list, because the monitor is too small to read there.
+  let monitorUI = false, filesMode = false, workFill = 0, hoverId = null, uiRects = [];
   function setZoom(on) { zoomed = on; document.querySelector('.work .pin').classList.toggle('zoomed', on); }
   function clearProject() { activeProject = null; lastKey = ''; setZoom(false); $$('.row[data-p]').forEach(r => r.classList.remove('active')); }
+  function openProject(id) {
+    if (activeProject === id) return;
+    $$('.row[data-p]').forEach(r => r.classList.toggle('active', r.dataset.p === id));
+    activeProject = id; lastKey = ''; setZoom(true);
+  }
   $$('.row[data-p]').forEach(row => {
-    const pick = () => {
-      if (activeProject === row.dataset.p) return;
-      $$('.row[data-p]').forEach(r => r.classList.toggle('active', r === row));
-      activeProject = row.dataset.p; lastKey = ''; setZoom(true);
-    };
-    row.addEventListener('click', pick);
-    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    const id = row.dataset.p;
+    row.addEventListener('click', () => openProject(id));
+    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProject(id); } });
+    // Keyboard focus on a (visually hidden) row highlights its file on the monitor.
+    row.addEventListener('focus', () => { hoverId = id; lastKey = ''; });
+    row.addEventListener('blur', () => { if (hoverId === id) { hoverId = null; lastKey = ''; } });
   });
   const closeBtn = $('#screenClose'); if (closeBtn) closeBtn.addEventListener('click', clearProject);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && activeProject) clearProject(); });
 
   function rrect(x, a, b, w, h, r) { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
   function wrapText(x, text, cx, cy, maxWidth, lh, maxLines) {
@@ -458,12 +469,174 @@ function start3D() {
     rrect(x, px + 20, my + 86, mw - 90, 10, 4); x.fill();
     x.fillStyle = col + '99'; rrect(x, px + 20, my + 112, 100, 26, 13); x.fill();
   }
+  /* ---------- the monitor as a file explorer ---------- */
+  const FILE_NAME = { w1: 'gamezone-3d', w2: 'otaghbazi', w3: 'trading-crm', w4: 'pasargad-3d', w5: 'learning-games' };
+  const projectIds = () => $$('.row[data-p]').map(r => r.dataset.p);
+  const projectUrl = (id) => { const a = $(`.row[data-p="${id}"] a.live`); return a ? a.href : ''; };
+  const hostOf = (u) => { try { return new URL(u).host; } catch (e) { return ''; } };
+  function fitText(x, str, maxW) {
+    if (x.measureText(str).width <= maxW) return str;
+    while (str.length > 1 && x.measureText(str + '…').width > maxW) str = str.slice(0, -1);
+    return str + '…';
+  }
+  // Like wrapText, but returns how many lines it drew so the caller can keep stacking.
+  function wrapLines(x, text, ox, oy, maxW, lh, maxLines) {
+    const words = text.split(' '); let line = '', n = 0;
+    for (let i = 0; i < words.length; i++) {
+      const test = line ? line + ' ' + words[i] : words[i];
+      if (x.measureText(test).width > maxW && line) {
+        x.fillText(line, ox, oy + n * lh); line = words[i]; n++;
+        if (n >= maxLines) return n;
+      } else line = test;
+    }
+    if (line) { x.fillText(line, ox, oy + n * lh); n++; }
+    return n;
+  }
+  function drawFilesScreen(x) {
+    const W = 1280, H = 720, rtl = lang === 'fa', d = T[lang];
+    const F = '"Vazirmatn", "Bricolage Grotesque", sans-serif', M = 'ui-monospace, Menlo, Consolas, monospace';
+    const LEFT = 290, RIGHT = 1240;
+    const al = rtl ? 'right' : 'left', alEnd = rtl ? 'left' : 'right';
+    const edge = rtl ? RIGHT : LEFT, edgeEnd = rtl ? LEFT : RIGHT;
+    const at = (off) => (rtl ? RIGHT - off : LEFT + off);          // x at `off` px from where reading starts
+    const loc = () => { x.direction = rtl ? 'rtl' : 'ltr'; x.textAlign = al; };   // localized text
+    const lat = (a) => { x.direction = 'ltr'; x.textAlign = a || 'left'; };       // code-like text
+    uiRects = [];
+    x.textBaseline = 'alphabetic';
+    x.fillStyle = '#0d141d'; x.fillRect(0, 0, W, H);
+
+    /* title bar */
+    x.fillStyle = '#0a1018'; x.fillRect(0, 0, W, 48);
+    ['#ff6b5c', '#ffbd44', '#5ad07a'].forEach((c, i) => { x.fillStyle = c; x.beginPath(); x.arc(28 + i * 26, 24, 7, 0, 6.2832); x.fill(); });
+    x.fillStyle = '#0d141d'; rrect(x, 140, 10, 190, 38, 8); x.fill();
+    x.fillStyle = '#ffab5c'; rrect(x, 154, 24, 16, 12, 3); x.fill();
+    lat(); x.fillStyle = '#dbe7f3'; x.font = '600 18px ' + F; x.textBaseline = 'middle'; x.fillText('projects', 180, 30); x.textBaseline = 'alphabetic';
+
+    /* sidebar */
+    x.fillStyle = '#0b121a'; x.fillRect(0, 48, 250, H - 48 - 30);
+    lat(); x.font = '600 13px ' + M; x.fillStyle = '#5f7186'; x.fillText('EXPLORER', 24, 86);
+    [['~/', 0, false], ['src/', 1, false], ['projects/', 1, true], ['notes.md', 1, false], ['coffee.txt', 1, false]].forEach(([name, depth, on], i) => {
+      const y = 126 + i * 40;
+      if (on) { x.fillStyle = 'rgba(255,171,92,.14)'; rrect(x, 10, y - 24, 230, 36, 8); x.fill(); }
+      x.fillStyle = on ? '#ffab5c' : '#8a97a3'; x.font = '600 17px ' + M; x.fillText(name, 26 + depth * 20, y);
+    });
+    x.fillStyle = 'rgba(242,223,196,.08)'; x.fillRect(250, 48, 1, H - 48 - 30);
+
+    const ids = projectIds();
+    const col = (id) => PROJECT_COLOR[id] || '#ffab5c';
+
+    /* breadcrumb bar */
+    x.fillStyle = 'rgba(242,223,196,.06)'; x.fillRect(251, 95, W - 251, 1);
+    lat(); x.font = '600 17px ' + M; x.fillStyle = '#5f7186';
+
+    if (!activeProject) {
+      x.fillText('~ / projects', LEFT, 80);
+      lat('right'); x.fillText(rtl ? ids.length.toLocaleString('fa') + ' مورد' : ids.length + ' items', RIGHT, 80);
+
+      loc(); x.fillStyle = '#f7ebd9'; x.font = '700 42px ' + F; x.fillText(d['work.h'], edge, 156);
+      x.fillStyle = '#c2ad95'; x.font = '19px ' + F; wrapLines(x, d['work.p'], edge, 194, 800, 28, 2);
+
+      const top = 256, rh = 74;
+      ids.forEach((id, i) => {
+        const y = top + i * rh, c = col(id), hot = hoverId === id;
+        if (hot) { x.fillStyle = c + '1c'; rrect(x, LEFT - 16, y + 3, RIGHT - LEFT + 32, rh - 6, 12); x.fill(); x.strokeStyle = c + '77'; x.lineWidth = 1.5; x.stroke(); }
+        else { x.fillStyle = 'rgba(242,223,196,.07)'; x.fillRect(LEFT - 16, y + rh - 1, RIGHT - LEFT + 32, 1); }
+        // file icon
+        const ix = rtl ? RIGHT - 34 : LEFT, iy = y + 14;
+        x.fillStyle = c + '26'; rrect(x, ix, iy, 34, 44, 6); x.fill(); x.strokeStyle = c; x.lineWidth = 2; x.stroke();
+        x.fillStyle = c; x.fillRect(ix + 8, iy + 18, 18, 2.5); x.fillRect(ix + 8, iy + 26, 18, 2.5); x.fillRect(ix + 8, iy + 34, 11, 2.5);
+        // name + first line of the description
+        loc(); x.fillStyle = hot ? '#fff3df' : '#f7ebd9'; x.font = '700 26px ' + F; x.fillText(d[id + '.t'], at(56), y + 33);
+        x.fillStyle = '#8a97a3'; x.font = '16px ' + F; x.fillText(fitText(x, paragraphs(d[id + '.d'])[0], 560), at(56), y + 58);
+        // status + chevron
+        x.textAlign = alEnd; x.direction = rtl ? 'rtl' : 'ltr'; x.fillStyle = c; x.font = '600 16px ' + F; x.fillText(d[id + '.s'], rtl ? LEFT + 30 : RIGHT - 30, y + 42);
+        x.strokeStyle = hot ? c : '#5f7186'; x.lineWidth = 2.5; x.beginPath();
+        const cx0 = rtl ? LEFT + 6 : RIGHT - 6, dir = rtl ? 1 : -1;
+        x.moveTo(cx0 + dir * 7, y + 30); x.lineTo(cx0, y + 38); x.lineTo(cx0 + dir * 7, y + 46); x.stroke();
+        uiRects.push({ id, act: 'open', x: LEFT - 16, y: y + 3, w: RIGHT - LEFT + 32, h: rh - 6 });
+      });
+      loc(); x.fillStyle = '#5f7186'; x.font = '15px ' + F; x.fillText(d['files.hint'], edge, 668);
+      x.fillStyle = '#ffab5c'; x.fillRect(0, H - 30, W, 30);
+      lat(); x.fillStyle = '#1a1310'; x.font = '600 15px ' + M; x.textBaseline = 'middle'; x.fillText('~/projects  ·  ' + ids.length + ' items', 18, H - 15); x.textBaseline = 'alphabetic';
+      return;
+    }
+
+    /* an opened project: the "file" fills the whole pane */
+    const id = activeProject, c = col(id), url = projectUrl(id);
+    const COLW = 540, BW = 370;
+
+    // back button (start edge) and file path (end edge)
+    const backLabel = d['files.back'];
+    x.font = '700 17px ' + F; const bw0 = Math.ceil(x.measureText(backLabel).width) + 60;
+    const bx = rtl ? RIGHT - bw0 : LEFT, bhot = hoverId === 'back';
+    x.fillStyle = bhot ? 'rgba(255,171,92,.28)' : 'rgba(255,171,92,.14)'; rrect(x, bx, 54, bw0, 36, 18); x.fill();
+    x.strokeStyle = '#ffab5c'; x.lineWidth = 1.5; x.stroke();
+    x.beginPath();
+    if (rtl) { x.moveTo(bx + bw0 - 24, 64); x.lineTo(bx + bw0 - 16, 72); x.lineTo(bx + bw0 - 24, 80); }
+    else { x.moveTo(bx + 24, 64); x.lineTo(bx + 16, 72); x.lineTo(bx + 24, 80); }
+    x.stroke();
+    x.fillStyle = '#ffab5c'; x.textAlign = rtl ? 'right' : 'left'; x.direction = rtl ? 'rtl' : 'ltr';
+    x.fillText(backLabel, rtl ? bx + bw0 - 38 : bx + 38, 78);
+    uiRects.push({ id: 'back', act: 'back', x: bx, y: 54, w: bw0, h: 36 });
+    lat(rtl ? 'left' : 'right'); x.font = '600 16px ' + M; x.fillStyle = '#5f7186'; x.fillText('~/projects/' + FILE_NAME[id], rtl ? LEFT : RIGHT, 78);
+
+    // title, status, tags
+    loc(); x.fillStyle = '#f7ebd9'; x.font = '700 54px ' + F;
+    const tl = wrapLines(x, d[id + '.t'], edge, 170, COLW, 62, 2);
+    let y = 170 + (tl - 1) * 62 + 34;
+    x.font = '700 17px ' + F; const sw = Math.ceil(x.measureText(d[id + '.s']).width) + 32;
+    const sx0 = rtl ? RIGHT - sw : LEFT;
+    x.fillStyle = c + '2a'; rrect(x, sx0, y - 4, sw, 34, 17); x.fill();
+    x.fillStyle = c; x.textAlign = 'center'; x.fillText(d[id + '.s'], sx0 + sw / 2, y + 19);
+    y += 52;
+    let tx = 0;
+    (d[id + '.tags'] || '').split(' · ').forEach(tag => {
+      x.font = '600 15px ' + M; const tw = Math.ceil(x.measureText(tag).width) + 24;
+      const chipX = rtl ? RIGHT - tx - tw : LEFT + tx;
+      x.fillStyle = '#ffffff14'; rrect(x, chipX, y - 4, tw, 30, 15); x.fill();
+      x.fillStyle = '#dbe7f3'; lat(); x.fillText(tag, chipX + 12, y + 17);
+      tx += tw + 8;
+    });
+    y += 68;
+    // every paragraph of the description
+    loc(); x.fillStyle = '#c2ad95'; x.font = '19px ' + F;
+    paragraphs(d[id + '.d']).forEach(par => { const n = wrapLines(x, par, edge, y, COLW, 29, 3); y += n * 29 + 12; });
+
+    // "open the live site" button
+    const lx = rtl ? RIGHT - 300 : LEFT, lhot = hoverId === 'live';
+    x.fillStyle = lhot ? '#ffffff' : c; rrect(x, lx, 622, 300, 52, 26); x.fill();
+    x.fillStyle = '#1a1310'; x.font = '700 20px ' + F; x.textAlign = 'center'; x.direction = rtl ? 'rtl' : 'ltr'; x.fillText(d['w.live'], lx + 150, 655);
+    uiRects.push({ id: 'live', act: 'live', x: lx, y: 622, w: 300, h: 52 });
+
+    // a small browser window showing the project
+    const wx = rtl ? LEFT : RIGHT - BW, wy = 130, wh = 450;
+    x.fillStyle = '#0b121a'; rrect(x, wx, wy, BW, wh, 12); x.fill();
+    x.strokeStyle = lhot ? c : 'rgba(242,223,196,.14)'; x.lineWidth = lhot ? 2.5 : 1.5; x.stroke();
+    x.fillStyle = '#161c26'; x.save(); rrect(x, wx, wy, BW, 40, 12); x.clip(); x.fillRect(wx, wy, BW, 40); x.restore();
+    ['#ff6b5c', '#ffbd44', '#5ad07a'].forEach((cc, i) => { x.fillStyle = cc; x.beginPath(); x.arc(wx + 20 + i * 18, wy + 20, 5, 0, 6.2832); x.fill(); });
+    x.fillStyle = '#0b121a'; rrect(x, wx + 88, wy + 9, BW - 104, 22, 11); x.fill();
+    lat(); x.fillStyle = '#8a97a3'; x.font = '13px ' + M; x.fillText(fitText(x, hostOf(url), BW - 130), wx + 100, wy + 25);
+    const g = x.createLinearGradient(wx, wy + 40, wx, wy + wh); g.addColorStop(0, c + '33'); g.addColorStop(1, '#0b121a');
+    x.fillStyle = g; x.save(); rrect(x, wx + 1, wy + 41, BW - 2, wh - 42, 11); x.clip(); x.fillRect(wx + 1, wy + 41, BW - 2, wh - 42); x.restore();
+    x.fillStyle = c; x.font = '700 120px ' + F; x.textAlign = 'center'; x.direction = 'ltr'; x.globalAlpha = 0.9;
+    x.fillText((FILE_NAME[id] || id)[0].toUpperCase(), wx + BW / 2, wy + 200); x.globalAlpha = 1;
+    x.fillStyle = c + '66'; rrect(x, wx + 30, wy + 250, 170, 16, 8); x.fill();
+    x.fillStyle = '#ffffff1f'; rrect(x, wx + 30, wy + 282, BW - 60, 11, 5); x.fill(); rrect(x, wx + 30, wy + 304, BW - 120, 11, 5); x.fill(); rrect(x, wx + 30, wy + 326, BW - 90, 11, 5); x.fill();
+    x.fillStyle = c + 'aa'; rrect(x, wx + 30, wy + 370, 120, 34, 17); x.fill();
+    uiRects.push({ id: 'live', act: 'live', x: wx, y: wy, w: BW, h: wh });
+
+    x.fillStyle = '#ffab5c'; x.fillRect(0, H - 30, W, 30);
+    lat(); x.fillStyle = '#1a1310'; x.font = '600 15px ' + M; x.textBaseline = 'middle'; x.fillText(FILE_NAME[id] + '  ·  UTF-8', 18, H - 15); x.textBaseline = 'alphabetic';
+  }
   const MONO = '26px ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
   let lastKey = '';
   document.fonts.ready.then(() => { lastKey = ''; });
   function drawScreen(chars, blink) {
-    const key = chars + ':' + blink + ':' + activeProject + ':' + lang; if (key === lastKey) return false; lastKey = key;
+    const portraitProject = monitorUI ? null : activeProject;
+    const key = chars + ':' + blink + ':' + portraitProject + ':' + lang + ':' + filesMode + ':' + (filesMode ? activeProject + ':' + hoverId : ''); if (key === lastKey) return false; lastKey = key;
     const x = sx, W = 1280, H = 720;
+    x.setTransform(SCK, 0, 0, SCK, 0, 0);
+    if (filesMode) { drawFilesScreen(x); return true; }
     x.fillStyle = '#0d141d'; x.fillRect(0, 0, W, H);
     /* tab bar */
     x.fillStyle = '#0a1018'; x.fillRect(0, 0, W, 48);
@@ -495,10 +668,10 @@ function start3D() {
     /* preview pane */
     x.fillStyle = '#111b27'; x.fillRect(730, 48, W - 730, H - 48 - 30);
     x.fillStyle = '#0b121a'; rrect(x, 760, 76, 490, 36, 8); x.fill();
-    x.fillStyle = '#5f7186'; x.font = '16px ui-monospace, Menlo, Consolas, monospace'; x.fillText(activeProject ? 'localhost:3000/work' : 'localhost:3000', 800, 100);
+    x.fillStyle = '#5f7186'; x.font = '16px ui-monospace, Menlo, Consolas, monospace'; x.fillText(portraitProject ? 'localhost:3000/work' : 'localhost:3000', 800, 100);
     const px = 790, py = 150;
-    if (activeProject) {
-      drawProjectView(x, px, py, activeProject);
+    if (portraitProject) {
+      drawProjectView(x, px, py, portraitProject);
     } else {
     /* avatar */
     const L0 = doneLines;
@@ -693,6 +866,7 @@ function start3D() {
     const w = Math.round(box.width) || innerWidth, h = Math.round(box.height) || innerHeight;
     if (w !== boxW || h !== boxH) {
       boxW = w; boxH = h; W = w; H = h; aspect = W / H;
+      monitorUI = aspect >= 0.8; root.classList.toggle('monitor-ui', monitorUI); lastKey = '';
       renderer.setSize(W, H, false); camera.aspect = aspect;
       camera.fov = aspect < 0.8 ? 52 : 40; camera.updateProjectionMatrix();
       steamScale(); needsRender = true;
@@ -731,12 +905,38 @@ function start3D() {
     if (py >= PHONE_CTA.y && py <= PHONE_CTA.y + PHONE_CTA.h) return PHONE_CTA.row;
     return -1;
   }
+  /* monitor hit-testing: the explorer rows, the back button and the live-site button */
+  function screenPoint(clientX, clientY) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    ndc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    ndc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(ndc, camera);
+    const hit = raycaster.intersectObject(screenMesh, false)[0];
+    return hit && hit.uv ? { x: hit.uv.x * 1280, y: (1 - hit.uv.y) * 720 } : null;
+  }
+  function monitorTarget(clientX, clientY) {
+    if (!filesMode || workFill < 0.9) return null;
+    const p = screenPoint(clientX, clientY);
+    if (!p) return null;
+    return uiRects.find(r => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) || null;
+  }
   document.addEventListener('click', e => {
+    if (e.target.closest && e.target.closest('button, a')) return;
+    const m = monitorTarget(e.clientX, e.clientY);
+    if (m) {
+      if (m.act === 'open') openProject(m.id);
+      else if (m.act === 'back') clearProject();
+      else if (m.act === 'live') { const u = projectUrl(activeProject); if (u) window.open(u, '_blank', 'noopener'); }
+      return;
+    }
     const i = hitTestPhone(e.clientX, e.clientY);
     if (i >= 0 && PHONE_ROWS[i].url) window.open(PHONE_ROWS[i].url, '_blank', 'noopener');
   });
   if (!coarse) addEventListener('pointermove', e => {
-    document.body.style.cursor = hitTestPhone(e.clientX, e.clientY) >= 0 ? 'pointer' : '';
+    const m = monitorTarget(e.clientX, e.clientY);
+    const h = m ? m.id : null;
+    if (h !== hoverId && !(document.activeElement && document.activeElement.matches && document.activeElement.matches('.row[data-p]'))) { hoverId = h; lastKey = ''; }
+    document.body.style.cursor = (m || hitTestPhone(e.clientX, e.clientY) >= 0) ? 'pointer' : '';
   }, { passive: true });
 
   /* state */
@@ -772,7 +972,9 @@ function start3D() {
       tmpL.x += (MON.x - tmpL.x) * portrait * side;
       tmpL.y -= 0.85 * portrait * side; tmpP.y -= 0.85 * portrait * side;
     }
-    const zoomTarget = zoomed ? 1 : 0;
+    workFill = monitorUI ? 1 - smooth(0.12, 0.9, Math.abs(u - WORK_INDEX)) : 0;
+    filesMode = monitorUI && workFill > 0.5;
+    const zoomTarget = monitorUI ? workFill : (zoomed ? 1 : 0);
     zoomT += (zoomTarget - zoomT) * (1 - Math.exp(-dt * (reduceMotion ? 10 : 3.4)));
     if (Math.abs(zoomTarget - zoomT) < 0.0015) zoomT = zoomTarget;
     if (zoomT > 0.0015) {

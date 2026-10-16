@@ -184,7 +184,7 @@ export function jsonLd(lang) {
         '@id': `${SITE}/#gamezone-3d`,
         name: 'GameZone 3D',
         alternateName: 'کافه گیم',
-        description: 'A 3D version of a fictional gaming café website, with a dark theme, built to work on phones too.',
+        description: 'A ready-made 3D website template for gaming centers and game cafés, for sale: a dark, gamer-styled design that works on phones too.',
         url: PROJECT_URLS.gamezone,
         creator: { '@id': `${SITE}/#person` },
       },

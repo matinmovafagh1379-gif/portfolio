@@ -69,3 +69,16 @@ Photos should be exported at 1200 px wide or more, with descriptive file names (
 
 - `main.jsx` does not use `React.StrictMode`. The scene starts once, holds a render loop and global listeners, and has no teardown, so StrictMode's double effect would start it twice.
 - `three` is pinned to `0.128.0`, the version the scene was written against. Newer releases rename parts of the API.
+
+## Projects on the monitor
+
+On landscape screens the Work chapter fills the view with the 3D monitor, which shows the
+projects as files in a small file explorer; clicking one opens it full-screen on the
+monitor (back button, "Live preview" button, and a browser window with its address).
+This is drawn in `drawFilesScreen` in `src/three/scene.js`; the project texts still come
+from `src/translations.js` (keys `w1`..`w5`), and the order comes from `PROJECTS` in
+`src/components/Work.jsx`. The same list stays in the page HTML, visually hidden, so search
+engines and screen readers see it and keyboard users can still open projects (Tab, Enter,
+Esc to go back). Portrait screens (phones) keep the normal on-page list, because the
+monitor is too small to read there. To add a project: add `wN.*` keys in both languages,
+a row in `Work.jsx`, a colour in `PROJECT_COLOR` and a file name in `FILE_NAME` (scene.js).
